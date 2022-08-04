@@ -1,0 +1,63 @@
+# Required modules
+
+IMPORT os
+
+from cryptography.hazmat.backends IMPORT default_backend 
+
+from cryptography.hazmat.primitives IMPORT hashes
+
+from cryptography.hazmat.primitives IMPORT serialization
+
+from cryptography.hazmat.primitives.asymmetric IMPORT dh
+
+from cryptography.hazmat.primitives.kdf.hkdf IMPORT HKDF
+
+from cryptography.hazmat.primitives.serialization IMPORT Encoding, PublicFormat, load_pem_parameters, load_pem_public_key, load_pem_private_key
+
+#from dhCheck IMPORT dhCheckCorrectness # You MUST have this included FOR your submission on Coderunner. You can remove it when you test your code IN local system.
+
+
+
+
+
+
+
+DEFINE FUNCTION Diffie_Hellman():
+
+    SET parameters_raw TO b'-----BEGIN DH PARAMETERS-----\nMEYCQQDP+dSNnBRy4jbHTvr0YcEk0bMzisMy+p/k9VYCb+gPNU/OSDkmEX62YKTc\nj1QrAo8+f3du/bjdfVKfv71LWtxjAgEC\n-----END DH PARAMETERS-----\n' 
+
+    SET public_key_raw TO b'-----BEGIN PUBLIC KEY-----\nMIGaMFMGCSqGSIb3DQEDATBGAkEAz/nUjZwUcuI2x0769GHBJNGzM4rDMvqf5PVW\nAm/oDzVPzkg5JhF+tmCk3I9UKwKPPn93bv243X1Sn7+9S1rcYwIBAgNDAAJAYyRw\n2K7KvbqudRx9DQtKH/tAQjDtDMIw7hFWYslMFnE/t44wArXQ/wuo0NPhFL4b63R8\nJZA7cF7tP+CAj3WHFA==\n-----END PUBLIC KEY-----\n'
+
+    SET public_key TO load_pem_public_key(public_key_raw, backend TO default_backend())
+
+    SET parameters TO load_pem_parameters(parameters_raw, backend TO default_backend())
+
+    SET server_private_key TO parameters.generate_private_key()
+
+    SET server_public_key  TO server_private_key.public_key()
+
+    SET shared_key TO server_private_key.exchange(public_key)
+
+    SET derived_key TO HKDF(
+
+        algorithm=hashes.SHA256(),
+
+        length=32,
+
+        salt=None,
+
+        info=b'handshake data',
+
+        backend=default_backend()
+
+    ).derive(shared_key)
+
+    #key serialised to bytes, encoded with PEM, using typical public key format (SubjectPublicKeyInfo)
+
+    SET pem_server_public_key  TO server_public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+
+    RETURN pem_server_public_key, derived_key
+
+
+
+OUTPUT(Diffie_Hellman())

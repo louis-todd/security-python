@@ -1,0 +1,43 @@
+# Required imports
+
+IMPORT hashlib
+
+
+
+DEFINE FUNCTION avalancheCalculator(string1, string2):
+
+    SET count TO 0
+
+    SET hash1 TO getHash(string1)
+
+    SET hash2 TO getHash(string2)
+
+    SET xor TO int(hash1, 2) ^ int(hash2, 2)
+
+    SET xor TO bin(xor)
+
+    FOR bit IN xor:
+
+        if(bit EQUALS "1"):
+
+            SET count TO count + 1
+
+    RETURN count
+
+
+
+DEFINE FUNCTION getHash(string):
+
+    SET hexValue TO hashlib.sha256(string.encode()).hexdigest()
+
+    SET binValue TO bin(int(hexValue, 16))
+
+    RETURN binValue
+
+
+
+SET string1 TO "Hello World1"
+
+SET string2 TO "Hello World2"
+
+OUTPUT(avalancheCalculator(string1, string2))

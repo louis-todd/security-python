@@ -1,0 +1,170 @@
+Student name: Louis Todd
+Student ID: 37842803
+
+Task 1 – Affine cipher encryptor
+
+SET alphabet TO {}
+
+
+
+DEFINE FUNCTION createAlphabet():
+
+    #adding all uppercase ascii to alphabet
+
+    FOR i IN range (65, 91):
+
+        alphabet.update({i % 26: ASCII(i)})
+
+
+
+
+
+DEFINE FUNCTION encryptAffine(plainText, a, b):
+
+    createAlphabet()
+
+    #creating blank cipher text string
+
+    SET cipherText TO ""
+
+    #iterating through each character IN plainText string
+
+    FOR char IN plainText:
+
+        SET char TO encryptCharacter(char, a ,b)
+
+        SET cipherText TO cipherText + char
+
+    RETURN cipherText
+
+
+
+DEFINE FUNCTION encryptCharacter(char, a, b):
+
+    #checks if character is in alphabet
+
+    if(char IN alphabet.values()): 
+
+        SET newChar TO alphabet.get((a * ASCII(char)  + b) % 26)
+
+        RETURN newChar
+
+    #if character is not IN alphabet RETURN plain character
+
+    ELSE:
+
+        RETURN char
+…
+Task 2 – Avalanche calculator
+
+DEFINE FUNCTION avalancheCalculator(string1, string2):
+
+    SET count TO 0
+
+    SET hash1 TO getHash(string1)
+
+    SET hash2 TO getHash(string2)
+
+    #xor hash1 and hash2
+
+    SET xor TO int(hash1, 2) ^ int(hash2, 2)
+
+    #get xor in binary form
+
+    SET xor TO bin(xor)
+
+    #count 1s in xor
+
+    FOR bit IN xor:
+
+        if(bit EQUALS "1"):
+
+            SET count TO count + 1
+
+    RETURN count
+
+
+
+DEFINE FUNCTION getHash(string):
+
+    SET hexValue TO hashlib.sha256(string.encode()).hexdigest()
+
+    SET binValue TO bin(int(hexValue, 16))
+
+    RETURN binValue
+
+
+…
+Task 3 – Diffie Helman
+
+DEFINE FUNCTION Diffie_Hellman():
+
+    SET parameters_raw TO b'-----BEGIN DH PARAMETERS-----\nMEYCQQDP+dSNnBRy4jbHTvr0YcEk0bMzisMy+p/k9VYCb+gPNU/OSDkmEX62YKTc\nj1QrAo8+f3du/bjdfVKfv71LWtxjAgEC\n-----END DH PARAMETERS-----\n' 
+
+    SET public_key_raw TO b'-----BEGIN PUBLIC KEY-----\nMIGaMFMGCSqGSIb3DQEDATBGAkEAz/nUjZwUcuI2x0769GHBJNGzM4rDMvqf5PVW\nAm/oDzVPzkg5JhF+tmCk3I9UKwKPPn93bv243X1Sn7+9S1rcYwIBAgNDAAJAYyRw\n2K7KvbqudRx9DQtKH/tAQjDtDMIw7hFWYslMFnE/t44wArXQ/wuo0NPhFL4b63R8\nJZA7cF7tP+CAj3WHFA==\n-----END PUBLIC KEY-----\n'
+
+    #load key from pem format
+    
+    SET public_key TO load_pem_public_key(public_key_raw, backend TO default_backend())
+
+    #load parameters form pem format
+
+    SET parameters TO load_pem_parameters(parameters_raw, backend TO default_backend())
+
+    #generate private key from parameters
+
+    SET server_private_key TO parameters.generate_private_key()
+
+    #generate public key from parameters
+
+    SET server_public_key  TO server_private_key.public_key()
+
+    #get shared key
+    
+    SET shared_key TO server_private_key.exchange(public_key)
+
+    #use shared key to derive key using HKDF (HMAC-based Extract-and-Expand Key Derivation Function)
+
+    SET derived_key TO HKDF(
+
+        algorithm=hashes.SHA256(),
+
+        length=32,
+
+        salt=None,
+
+        info=b'handshake data',
+
+        backend=default_backend()
+
+    ).derive(shared_key)
+
+    #key serialised to bytes, encoded with PEM, using typical public key format (SubjectPublicKeyInfo)
+
+    SET pem_server_public_key  TO server_public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+
+    RETURN pem_server_public_key, derived_key
+…
+Task 4 – Finding the ciphertext
+
+DEFINE FUNCTION findCiphertext():
+
+    SET messageA TO b"I'll give you 500 and that's my last offer."
+
+    SET messageB TO b"I'll give you 100 and that's my last offer."
+
+    SET messageACipherText TO  b"\xef@\x92<$J\xb2\x8c\xbc\xabl'\x016\xd2{W-8\xcas\x83*\xa1\xef)\xc0\xda\x7fe\xab\xb1\x94\x7fJ\x98\xc8\xeei|'t\xb4"
+    #uses bit flip attack https://www.wikiwand.com/en/Stream_cipher_attacks#/Bit-flipping_attack to manipulate data
+    #wouldn't work if the text had a message authentication code
+    SET messageBCipherText TO byte_xor(messageACipherText, byte_xor(messageA, messageB))
+
+    RETURN messageBCipherText
+
+
+#returns the result of XORing the two bytes ba1, ba2 together
+DEFINE FUNCTION byte_xor(ba1, ba2):
+
+    RETURN bytes([_a ^ _b FOR _a, _b IN zip(ba1, ba2)])
+
+…
+

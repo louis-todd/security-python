@@ -1,0 +1,25 @@
+# Required modules
+
+from cryptography.hazmat.primitives.ciphers IMPORT Cipher, algorithms, modes
+
+from cryptography.hazmat.backends IMPORT default_backend
+
+
+
+DEFINE FUNCTION findCiphertext():
+
+    SET messageA TO b"I'll give you 500 and that's my last offer."
+
+    SET messageB TO b"I'll give you 100 and that's my last offer."
+
+    SET messageACipherText TO  b"\xef@\x92<$J\xb2\x8c\xbc\xabl'\x016\xd2{W-8\xcas\x83*\xa1\xef)\xc0\xda\x7fe\xab\xb1\x94\x7fJ\x98\xc8\xeei|'t\xb4"
+
+    SET messageBCipherText TO byte_xor(messageACipherText, byte_xor(messageA, messageB))
+
+    RETURN messageBCipherText
+
+
+
+DEFINE FUNCTION byte_xor(ba1, ba2):
+
+    RETURN bytes([_a ^ _b FOR _a, _b IN zip(ba1, ba2)])

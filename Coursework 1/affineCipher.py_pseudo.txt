@@ -1,0 +1,67 @@
+# Required imports
+
+IMPORT string
+
+
+
+SET alphabet TO {}
+
+
+
+DEFINE FUNCTION createAlphabet():
+
+    #adding all uppercase ascii to alphabet
+
+    FOR i IN range (65, 91):
+
+        alphabet.update({i % 26: chr(i)})
+
+
+
+
+
+DEFINE FUNCTION encryptAffine(plainText, a, b):
+
+    createAlphabet()
+
+    #creating blank cipher text string
+
+    SET cipherText TO ""
+
+    #iterating through each character IN plainText string
+
+    FOR char IN plainText:
+
+        SET char TO encryptCharacter(char, a ,b)
+
+        SET cipherText TO cipherText + char
+
+    RETURN cipherText
+
+
+
+DEFINE FUNCTION encryptCharacter(char, a, b):
+
+    #checks IF character is IN alphabet
+
+    if(char IN alphabet.values()): 
+
+        SET newChar TO alphabet.get((a * ord(char)  + b) % 26)
+
+        RETURN newChar
+
+    #if character is not IN alphabet RETURN plain character
+
+    ELSE:
+
+        RETURN char
+
+
+
+
+
+SET plainText TO "HELLO WORLD!"
+
+OUTPUT(encryptAffine(plainText, 1, 1))
+
+OUTPUT(alphabet)
